@@ -1,16 +1,10 @@
-[tool.poetry]
+[project]
 name = "prefect-demo"
 version = "0.1.0"
-description = "\"short demo on workflow management\""
-authors = ["Hannah Wimmer <hannah.pulferer@fh-joanneum.at>"]
+description = "Add your description here"
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = ">=3.12,<3.14"
-pypdf2 = "^3.0.1"
-prefect = {extras = ["cli"], version = "^3.4.11"}
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires-python = ">=3.11"
+dependencies = [
+    "prefect>=3.4.11",
+    "prefect-github>=0.3.1",
+]

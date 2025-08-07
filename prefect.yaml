@@ -14,21 +14,28 @@ push: null
 
 # pull section allows you to provide instructions for cloning this project in remote locations
 pull:
-- prefect.deployments.steps.set_working_directory:
-    directory: ~/projects/prefect_demo
+- prefect.deployments.steps.git_clone:
+    repository: https://github.com/hannahwimmer/prefect_demo.git
+    branch: main
+    credentials: '{{ prefect.blocks.github-credentials.prefect-demo }}'
+- prefect.deployments.steps.run_shell_script:
+    directory: '{{ clone-step.directory }}'
+    script: pip install --upgrade 'uv>=0.5.6,<0.6'
+- prefect.deployments.steps.run_shell_script:
+    directory: '{{ clone-step.directory }}'
+    script: uv sync --no-editable --no-dev
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: folder-watcher
-  version: null
-  tags: []
-  description: "automated folder watcher that processes new PDF files"
+- name: "test-deployment"
+  description: "short test deployment using prefect"
   schedule: 
-    interval: 300
-  flow_name: null
-  entrypoint: null
-  parameters: {}
+    interval: 20
+  flow_name: greeting-procedure
+  entrypoint: prefect_demo_script.py:greeting_procedure
   work_pool:
-    name: pdf-processing-pool
-    work_queue_name: null
-    job_variables: {}
+    name: demo-pool
+    work_queue_name: "default"
+    job_variables: {
+        "env": {"UV_PROJECT_ENVIRONMENT": "/usr/local"}
+    }

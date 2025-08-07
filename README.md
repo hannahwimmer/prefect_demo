@@ -7,13 +7,12 @@
 - Poetry installed (for package management)
 
 
-### 1 - Setting up a Poetry environment
+### 1.A - Setting up a Poetry environment
 
 Let's start with setting up a proper environment using Poetry (package management tool):
 - `poetry init`: initializes Poetry for our project (writing a `.toml` file with basic info about our project)
 - `poetry add <package name>`: adds a specific package (e.g., numpy) to our environment
 (will update or create a `.lock` file, if it doesn't exist already)
-- to add prefect, use `poetry add "prefect[cli]`"
 - if there are dependency issues, resolve them in the `.toml` file and save, then try
 to add the package again
 - `poetry shell`: starts the virtual environment
@@ -22,6 +21,39 @@ to add the package again
 - `deactivate` and `exit` to exit to exit a Poetry shell
 - `poetry show`: command to view the packages in our environment
 - `poetry remove <package name>`: removes a specific package from our environment
+
+### 1.B - Setting up a uv environment
+
+There's a new "kid on the block" working faster than pip, conda, or poetry, called 'uv'.
+To use that, install the uv package:
+
+- `curl -LsSf https://astral.sh/uv/install.sh | sudo sh`
+    (you might need to copy from root to usr with 
+    `sudo cp /root/.local/bin/uv /usr/local/bin/` and 
+    `sudo cp /root/.local/bin/uvx /usr/local/bin/`)
+
+Once everything works (i.e., `uv --version` gives you an output), run:
+- `uv init`: initializes a project by creating a `.toml` file
+
+To add packages to uv, then run:
+- `uv add <package_name>`: will add that package to the dependency list and create a
+lock file, if it doesn't exist yet (very similar to poetry)
+
+More useful commands:
+- `uv remove <package_name>`: will remove the specified package again
+- `uv run <script_name.py>`: will run that script inside the virtual environment uv
+created for the project
+- `uv tool run <tool_name> <script_name.py>`: uv creates a temporary venv, where the
+requested tool (e.g., black, for formatting) is installed and run. You can use the tool
+for command-line statements without installing them in your project's venv, meaning
+faster execution and cleaner project dependencies.
+
+To activate a venv, run:
+- `source .venv/bin/activate`
+
+To exit the venv, run:
+- `deactivate`
+
 
 ### 2 - setting up normal Python code to do what we want
 
@@ -88,7 +120,8 @@ Once that is done, you can find the work pool via your terminal using:
 **Modifying the deployment configuration**
 We want to give our deployment and flow a name, and to set up a specific interval at
 which the code should be run. We also have to set the work pool to the one we just
-created. **Importantly**, we also have to set an **entrypoint**.
+created. Lastly, we need to point Prefect to our script's location (I'm using a GitHub
+repo, so I point it there). **Importantly**, we also have to set an **entrypoint**.
 This is a path to the relevant script that should be executed, and the function in the
 script that should be called at the specified intervals!
 
@@ -98,7 +131,22 @@ we want to automatically run the process_pdfs() flow every five minutes). To set
 up, run:
 
 - `prefect deploy`: lets you choose a deployment configuration (in our case, the
-deployment corresponding to the `.yaml` file called "folder-watcher"), then lets you
+deployment "folder-watcher" corresponding to our `.yaml` file), then lets you
 chose a specific flow to deploy (in our case, the flow corresponding to the function
 "process_pdfs").
+
+**GitHub access**
+To allow the Prefect Cloud access to the code it has to run, we'll have to set up
+access to the related GitHub repo.
+
+- `poetry add prefect_github`: add the github package of Prefect
+- `prefect block register -m prefect_github`: register a block
+- `prefect block create github-repository`: create a block. Give the block a name 
+(in our case, 'prefect-demo') and add a GitHub `Personal Access Token (Classic)` for
+authentification. 
+
+*For the GitHub token:*
+- go to https://github.com/settings/tokens
+- select `Generate new token` > `Generate new token (class)`
+- copy the key somewhere to store
 
