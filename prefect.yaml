@@ -14,16 +14,23 @@ push: null
 
 # pull section allows you to provide instructions for cloning this project in remote locations
 pull:
-- prefect.deployments.steps.git_clone:
-    repository: https://github.com/hannahwimmer/prefect_demo.git
-    branch: main
-    credentials: '{{ prefect.blocks.github-credentials.prefect-demo }}'
-- prefect.deployments.steps.run_shell_script:
-    directory: '{{ clone-step.directory }}'
-    script: pip install --upgrade 'uv>=0.5.6,<0.6'
-- prefect.deployments.steps.run_shell_script:
-    directory: '{{ clone-step.directory }}'
-    script: uv sync --no-editable --no-dev
+  - prefect.deployments.steps.git_clone:
+      id: clone-step
+      repository: https://github.com/hannahwimmer/prefect_demo.git
+      branch: main
+      credentials: "{{ prefect.blocks.github-credentials.prefect-demo }}"
+
+  - prefect.deployments.steps.run_shell_script:
+      id: debug-step
+      directory: "{{ clone-step.directory }}"
+      script: |
+        echo "Listing pyproject location:"
+        find . -name pyproject.toml
+        uv sync --no-editable --no-dev --project pyproject.toml
+
+  - prefect.deployments.steps.run_shell_script:
+      directory: "{{ clone-step.directory }}"
+      script: uv sync --no-editable --no-dev --project pyproject.toml
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
