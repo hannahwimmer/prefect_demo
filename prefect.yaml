@@ -21,16 +21,16 @@ pull:
       credentials: "{{ prefect.blocks.github-credentials.prefect-demo }}"
 
   - prefect.deployments.steps.run_shell_script:
-      id: debug-step
+      id: install-uv
       directory: "{{ clone-step.directory }}"
       script: |
-        echo "Listing pyproject location:"
-        find . -name pyproject.toml
-        uv sync --no-editable --no-dev --project pyproject.toml
+        curl -LsSf https://astral.sh/uv/install.sh | sh
 
   - prefect.deployments.steps.run_shell_script:
       directory: "{{ clone-step.directory }}"
-      script: uv sync --no-editable --no-dev --project pyproject.toml
+      script: |
+        echo "Installing with uv..."
+        uv sync --no-editable --no-dev --project pyproject.toml
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
